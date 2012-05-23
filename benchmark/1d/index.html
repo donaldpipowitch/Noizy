@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+<head>
+    <title>Noizy: 1D Example</title>
+
+    <!-- css -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <h1>Noizy Benchmark</h1>
+
+    <div class="noise-container clearfix">
+        <h2>Laufzeiten</h2>
+
+        <div class="noise-container clearfix">
+            <div class="noise-example">
+                <p>Value Noise</p>
+                <div id="valueNoise1D"></div>
+            </div>
+            <div class="noise-example">
+                <p>Gradient Noise</p>
+                <div id="gradientNoise1D"></div>
+            </div>
+        </div>
+
+        <p id="testsRunning">Messungen werden durchgeführt...</p>
+        <p id="testCount">Absolvierte Messungen: 0</p>
+        <div id="noiseResults">
+        </div>
+    </div>
+
+    <!-- scripts -->
+    <script data-main="scripts/main" src="scripts/require-jquery.js"></script>
+</body>
+</html>

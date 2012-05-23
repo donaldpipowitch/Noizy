@@ -1,0 +1,47 @@
+<!doctype html>
+<html>
+<head>
+    <title>Noizy: 1D Example</title>
+
+    <!-- css -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <h1>Noizy: 1D Example</h1>
+
+    <div class="noise-container clearfix">
+        <h2>Value Noise</h2>
+        <div class="noise-example">
+            <p>linear</p>
+            <canvas id="valueNoise1DLinear" width=300 height=200>
+                Ihr Browser unterstützt das Canvas Element nicht.
+            </canvas>
+        </div>
+        <div class="noise-example">
+            <p>cosine</p>
+            <canvas id="valueNoise1DCosine" width=300 height=200>
+                Ihr Browser unterstützt das Canvas Element nicht.
+            </canvas>
+        </div>
+        <div class="noise-example">
+            <p>cubic</p>
+            <canvas id="valueNoise1DCubic" width=300 height=200>
+                Ihr Browser unterstützt das Canvas Element nicht.
+            </canvas>
+        </div>
+    </div>
+
+    <div class="noise-container clearfix">
+        <h2>Gradient Noise</h2>
+        <div class="noise-example">
+            <p>linear</p>
+            <canvas id="gradientNoise1D" width=300 height=200>
+                Ihr Browser unterstützt das Canvas Element nicht.
+            </canvas>
+        </div>
+    </div>
+
+    <!-- scripts -->
+    <script data-main="scripts/main" src="scripts/require.js"></script>
+</body>
+</html>
