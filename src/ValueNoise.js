@@ -5,23 +5,16 @@
  * src2: http://www.xnamag.de/forum/viewtopic.php?t=5463&postdays=0&postorder=asc&start=0
  */
 
-define(function() {
+define([
+        './PRNG'
+    ],
+    function(PRNG) {
 
     /**
      * Value Noise 1D
      */
 
-    var getNoise1D = function(x) {
-        // Robert Jenkins' hash function (returns [0, 1])
-        // src: http://stackoverflow.com/questions/3428136/javascript-integer-math-incorrect-results
-        x = ((x + 0x7ed55d16) + (x << 12))  & 0xffffffff;
-        x = ((x ^ 0xc761c23c) ^ (x >>> 19)) & 0xffffffff;
-        x = ((x + 0x165667b1) + (x << 5))   & 0xffffffff;
-        x = ((x + 0xd3a2646c) ^ (x << 9))   & 0xffffffff;
-        x = ((x + 0xfd7046c5) + (x << 3))   & 0xffffffff;
-        x = ((x ^ 0xb55a4f09) ^ (x >>> 16)) & 0xffffffff;
-        return (x & 0xfffffff) / 0x10000000;
-    };
+    var getNoise1D = PRNG.hash;
 
     var getLinearInterpolation1D = function(a, b, x) {
         return a * (1 - x) + b * x;
@@ -401,7 +394,7 @@ define(function() {
     };
 
     /**
-     * Return object.
+     * Return facade
      */
 
     return {

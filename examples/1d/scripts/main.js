@@ -4,18 +4,18 @@ require(['../../../src/Noizy'], function(Noizy) {
 
     // config
     var seedX = 1,
-        stepX = 0.1,
+        stepX = 0.01,
         frequency = 1,
-        amplitude = 1,
+        amplitude = 0.2,
         persistence = 1,
-        octaves = 1;
+        octaves = 5;
 
     // draw function
     var drawNoise1D = function(canvas, noiseFunction, seedX, stepX, frequency,
                                amplitude, persistence, octaves) {
         var w = canvas.width;
         var h = canvas.height;
-        var context  = canvas.getContext("2d");
+        var context  = canvas.getContext('2d');
         var imageData = context.createImageData(w, h);
 
         var height = [];
@@ -42,11 +42,11 @@ require(['../../../src/Noizy'], function(Noizy) {
         context.putImageData(imageData, 0, 0);
     };
 
-    // -> draw calls
+    // -> draw calls (with modifications to get similar visual results)
 
     // ValueNoise 1D Linear
     drawNoise1D(
-        document.getElementById("valueNoise1DLinear"),
+        document.getElementById('valueNoise1DLinear'),
         Noizy.ValueNoise.get1DLinear,
         seedX,
         stepX,
@@ -58,7 +58,7 @@ require(['../../../src/Noizy'], function(Noizy) {
 
     // ValueNoise 1D Cosine
     drawNoise1D(
-        document.getElementById("valueNoise1DCosine"),
+        document.getElementById('valueNoise1DCosine'),
         Noizy.ValueNoise.get1DCosine,
         seedX,
         stepX,
@@ -70,7 +70,7 @@ require(['../../../src/Noizy'], function(Noizy) {
 
     // ValueNoise 1D Cubic
     drawNoise1D(
-        document.getElementById("valueNoise1DCubic"),
+        document.getElementById('valueNoise1DCubic'),
         Noizy.ValueNoise.get1DCubic,
         seedX,
         stepX,
@@ -82,10 +82,21 @@ require(['../../../src/Noizy'], function(Noizy) {
 
     // GradientNoise 1D Linear
     drawNoise1D(
-        document.getElementById("gradientNoise1D"),
+        document.getElementById('gradientNoise1D'),
         Noizy.GradientNoise.get1D,
-        seedX,
-        stepX,
+        seedX / 2,
+        stepX / 2,
+        frequency,
+        amplitude,
+        persistence * 1.2,
+        octaves
+    );
+    // SimplexNoise 1D Linear
+    drawNoise1D(
+        document.getElementById('simplexNoise1D'),
+        Noizy.SimplexNoise.get1D,
+        seedX / 2,
+        stepX / 2,
         frequency,
         amplitude,
         persistence,

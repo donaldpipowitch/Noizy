@@ -5,9 +5,15 @@
  * @author: donaldpipowitch
  */
 
-define(['./ValueNoise', './GradientNoise'], function(ValueNoise, GradientNoise) {
-    return {
-        ValueNoise: ValueNoise,
-        GradientNoise: GradientNoise
-    }
+define([
+        './ValueNoise',
+        './GradientNoise',
+        './SimplexNoise'
+    ],
+    function(ValueNoise, GradientNoise, SimplexNoise) {
+        return {
+            ValueNoise: ValueNoise,
+            GradientNoise: GradientNoise,
+            SimplexNoise: SimplexNoise
+        }
 });

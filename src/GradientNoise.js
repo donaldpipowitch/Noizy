@@ -2,234 +2,236 @@
  * Gradient Noise
  *
  * src: http://mrl.nyu.edu/~perlin/doc/oscar.html#noise
+ * src2: http://code.google.com/p/processing/source/browse/trunk/processing/java/libraries/opengl/examples/Advanced/Planets/Perlin.pde?spec=svn9511&r=9511
+ * src3: http://www.gamedev.net/topic/291699-blocky-perlin-noise-pics-included/
  */
 
-define(function() {
+define([
+        './PRNG'
+    ],
+    function(PRNG) {
 
-    // pseudo random: http://stackoverflow.com/questions/3428136/javascript-integer-math-incorrect-results/3428186#3428186
-    var pseudoRandom = (function() {
-        var seed = 49734321;
-        return function() {
-            // Robert Jenkins' 32 bit integer hash function.
-            seed = ((seed + 0x7ed55d16) + (seed << 12))  & 0xffffffff;
-            seed = ((seed ^ 0xc761c23c) ^ (seed >>> 19)) & 0xffffffff;
-            seed = ((seed + 0x165667b1) + (seed << 5))   & 0xffffffff;
-            seed = ((seed + 0xd3a2646c) ^ (seed << 9))   & 0xffffffff;
-            seed = ((seed + 0xfd7046c5) + (seed << 3))   & 0xffffffff;
-            seed = ((seed ^ 0xb55a4f09) ^ (seed >>> 16)) & 0xffffffff;
-            return (seed & 0xfffffff) / 0x10000000;
-        };
-    })();
+    // own PRNG instance
+    var pseudoRandom = new PRNG().random;
 
-    var pseudoRandomMask = function() {
-        return ((pseudoRandom() * (B + B)) - B) / B;    // output: [-1, 1]
-        //return (pseudoRandom() * (B + B)) / B / 2;    // output: [0, 1]
+    var randomFloat = function() {
+        return pseudoRandom() * 2 - 1;    // output: [-1, 1]
+        //return ((pseudoRandom() * (MASK + MASK) - MASK)) / MASK;    // output: [-1, 1]
     };
 
-    var B = 0x100;
-    var BM = 0xff;
-    var N = 0x1000;
-    var NP = 12;   /* 2^N */
-    var NM = 0xfff;
+    var MASK = 256, // B
+        MAXIM = 4096,   // N
+        permutationTable = new Array(MASK + MASK),  // p
+        randomTable = new Array(MASK + MASK);   // g1
 
-    var p = new Array(B + B + 2);
-
-    var g3 = new Array(B + B + 2);
-    for(var i = 0; i < g3.length; i++)
-        g3[i] = new Array(3);
-
-    var g2 = new Array(B + B + 2);
-    for(var i = 0; i < g2.length; i++)
-        g2[i] = new Array(2);
-
-    var g1 = new Array(B + B + 2);
-    var start = 1;
+    var X =  { int0: 0, int1: 0, frac0: 0, frac1: 0 },
+        Y =  { int0: 0, int1: 0, frac0: 0, frac1: 0 },
+        Z =  { int0: 0, int1: 0, frac0: 0, frac1: 0 };
 
     var s_curve = function(t) {
-        return t * t * (3. - 2. * t);
+        return t * t * (3 - 2 * t);
     };
 
     var lerp = function(t, a, b) {
         return a + t * (b - a);
     };
 
-    var setup = function(pos, posValue) {
-        var s = {};
-        var t = posValue + N;
-        s['b' + pos + '0'] = (Math.floor(t)) & BM;
-        s['b' + pos + '1'] = (s['b' + pos + '0'] + 1) & BM;
-        s['r' + pos + '0'] = t - Math.floor(t);
-        s['r' + pos + '1'] = s['r' + pos + '0'] - 1.;
-        return s;
+    var setup = function(p, P)
+    {
+        var t = p + MAXIM;
+        var intT = Math.floor(t);
+
+        P.int0 = Math.floor(intT % MASK);
+        P.int1 = Math.floor((P.int0 + 1) % MASK);
+        P.frac0 = t - intT;
+        P.frac1 = P.frac0 - 1;
     };
 
     var noise1 = function(x) {
-        var sx, u, v, vec = {};
+        setup(x, X);
 
-        vec.x = x;
-        if (start) {
-            start = 0;
-            init();
-        }
+        var index0 = permutationTable[X.int0];
+        var index1 = permutationTable[X.int1];
 
-        var setupX = setup('x', vec.x);
+        var sx = s_curve(X.frac0);
 
-        sx = s_curve(setupX.rx0);
-
-        u = setupX.rx0 * g1[ p[ setupX.bx0 ] ];
-        v = setupX.rx1 * g1[ p[ setupX.bx1 ] ];
+        var u = X.frac0 * randomTable[index0].x;
+        var v = X.frac1 * randomTable[index1].x;
 
         return lerp(sx, u, v);
     };
 
     var noise2 = function(x, y) {
-        var b00, b10, b01, b11, q, sx, sy, a, b, u, v, vec = {};
-        var i, j;
+        setup(x, X);
+        setup(y, Y);
 
-        vec.x = x;
-        vec.y = y;
-        if (start) {
-            start = 0;
-            init();
-        }
+        var index0 = permutationTable[X.int0];
+        var index1 = permutationTable[X.int1];
 
-        var setupX = setup('x', vec.x);
-        var setupY = setup('y', vec.y);
+        var corner0 = permutationTable[index0 + Y.int0];
+        var corner1 = permutationTable[index1 + Y.int0];
+        var corner2 = permutationTable[index0 + Y.int1];
+        var corner3 = permutationTable[index1 + Y.int1];
 
-        i = p[ setupX.bx0 ];
-        j = p[ setupX.bx1 ];
+        var sx = s_curve(X.frac0);
+        var sy = s_curve(Y.frac0);
 
-        b00 = p[ i + setupY.by0 ];
-        b10 = p[ j + setupY.by0 ];
-        b01 = p[ i + setupY.by1 ];
-        b11 = p[ j + setupY.by1 ];
+        var v, kx, ky;
+        v = randomTable[corner0];   
+        kx = X.frac0 * v.x + Y.frac0 * v.y;
+        v = randomTable[corner1]; 	
+        ky = X.frac1 * v.x + Y.frac0 * v.y;
+        var a = lerp(sx, kx, ky);
 
-        sx = s_curve(setupX.rx0);
-        sy = s_curve(setupY.ry0);
-
-        var at2 = function(rx,ry) {
-            return rx * q[0] + ry * q[1];
-        };
-
-        q = g2[ b00 ] ; u = at2(setupX.rx0,setupY.ry0);
-        q = g2[ b10 ] ; v = at2(setupX.rx1,setupY.ry0);
-        a = lerp(sx, u, v);
-
-        q = g2[ b01 ] ; u = at2(setupX.rx0,setupY.ry1);
-        q = g2[ b11 ] ; v = at2(setupX.rx1,setupY.ry1);
-        b = lerp(sx, u, v);
+        v = randomTable[corner2]; 	
+        kx = X.frac0 * v.x + Y.frac1 * v.y;
+        v = randomTable[corner3]; 	
+        ky = X.frac1 * v.x + Y.frac1 * v.y;
+        var b = lerp(sx, kx, ky);
 
         return lerp(sy, a, b);
     };
 
     var noise3 = function(x, y, z) {
-        var b00, b10, b01, b11, q, sy, sz, a, b, c, d, t, u, v, vec = {};
-        var i, j;
+        setup(x, X);
+        setup(y, Y);
+        setup(z, Z);
 
-        vec.x = x;
-        vec.y = y;
-        vec.z = z;
-        if (start) {
-            start = 0;
-            init();
-        }
+        var index0 = permutationTable[X.int0];
+        var index1 = permutationTable[X.int1];
 
-        var setupX = setup('x', vec.x);
-        var setupY = setup('y', vec.y);
-        var setupZ = setup('z', vec.z);
+        var corner0 = permutationTable[index0 + Y.int0];
+        var corner1 = permutationTable[index1 + Y.int0];
+        var corner2 = permutationTable[index0 + Y.int1];
+        var corner3 = permutationTable[index1 + Y.int1];
 
-        i = p[ setupX.bx0 ];
-        j = p[ setupX.bx1 ];
+        var sx = s_curve(X.frac0);
+        var sy = s_curve(Y.frac0);
+        var sz = s_curve(Z.frac0);
 
-        b00 = p[ i + setupY.by0 ];
-        b10 = p[ j + setupY.by0 ];
-        b01 = p[ i + setupY.by1 ];
-        b11 = p[ j + setupY.by1 ];
+        var v, kx, ky, a, b;
+        v = randomTable[corner0 + Z.int0];
+        kx = X.frac0 * v.x + Y.frac0 * v.y + Z.frac0 * v.z;
+        v = randomTable[corner1 + Z.int0];
+        ky = X.frac1 * v.x + Y.frac0 * v.y + Z.frac0 * v.z;
+        a = lerp(sx, kx, ky);
 
-        t  = s_curve(setupX.rx0);
-        sy = s_curve(setupY.ry0);
-        sz = s_curve(setupZ.rz0);
+        v = randomTable[corner2 + Z.int0];
+        kx = X.frac0 * v.x + Y.frac1 * v.y + Z.frac0 * v.z;
+        v = randomTable[corner3 + Z.int0];
+        ky = X.frac1 * v.x + Y.frac1 * v.y + Z.frac0 * v.z;
+        b = lerp(sx, kx, ky);
 
-        var at3 = function(rx,ry,rz) {
-            return rx * q[0] + ry * q[1] + rz * q[2];
-        };
+        var c = lerp(sy, a, b);
 
-        q = g3[ b00 + setupZ.bz0 ] ; u = at3(setupX.rx0,setupY.ry0,setupZ.rz0);
-        q = g3[ b10 + setupZ.bz0 ] ; v = at3(setupX.rx1,setupY.ry0,setupZ.rz0);
-        a = lerp(t, u, v);
+        v = randomTable[corner0 + Z.int1];
+        kx = X.frac0 * v.x + Y.frac0 * v.y + Z.frac1 * v.z;
+        v = randomTable[corner1 + Z.int1];
+        ky = X.frac1 * v.x + Y.frac0 * v.y + Z.frac1 * v.z;
+        a = lerp(sx, kx, ky);
 
-        q = g3[ b01 + setupZ.bz0 ] ; u = at3(setupX.rx0,setupY.ry1,setupZ.rz0);
-        q = g3[ b11 + setupZ.bz0 ] ; v = at3(setupX.rx1,setupY.ry1,setupZ.rz0);
-        b = lerp(t, u, v);
+        v = randomTable[corner2 + Z.int1];
+        kx = X.frac0 * v.x + Y.frac1 * v.y + Z.frac1 * v.z;
+        v = randomTable[corner3 + Z.int1];
+        ky = X.frac1 * v.x + Y.frac1 * v.y + Z.frac1 * v.z;
+        b = lerp(sx, kx, ky);
 
-        c = lerp(sy, a, b);
-
-        q = g3[ b00 + setupZ.bz1 ] ; u = at3(setupX.rx0,setupY.ry0,setupZ.rz1);
-        q = g3[ b10 + setupZ.bz1 ] ; v = at3(setupX.rx1,setupY.ry0,setupZ.rz1);
-        a = lerp(t, u, v);
-
-        q = g3[ b01 + setupZ.bz1 ] ; u = at3(setupX.rx0,setupY.ry1,setupZ.rz1);
-        q = g3[ b11 + setupZ.bz1 ] ; v = at3(setupX.rx1,setupY.ry1,setupZ.rz1);
-        b = lerp(t, u, v);
-
-        d = lerp(sy, a, b);
+        var d = lerp(sy, a, b);
 
         return lerp(sz, c, d);
     };
 
-    var normalize2 = function(v) {
-        var s = Math.sqrt(v[0] * v[0] + v[1] * v[1]);
-        v[0] = v[0] / s;
-        v[1] = v[1] / s;
+    var normalize = function(v) {
+        var s = Math.sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
+        v.x /= s;
+        v.y /= s;
+        v.z /= s;
     };
 
-    var normalize3 = function(v) {
-        var s = Math.sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
-        v[0] = v[0] / s;
-        v[1] = v[1] / s;
-        v[2] = v[2] / s;
-    };
+    var generateTables =  function() {
+        var i, k, temp;
 
-    var init =  function() {
-        var i, j, k;
+        for(i = 0; i < randomTable.length; i++)
+            randomTable[i] = {};
 
-        for (i = 0; i < B ; i++) {
-            p[i] = i;
+        for (i = 0; i < MASK ; i++) {
+            permutationTable[i] = i;
 
-            g1[i] = pseudoRandomMask();
-
-            for (j = 0; j < 2 ; j++)
-                g2[i][j] = pseudoRandomMask();
-            normalize2(g2[i]);
-
-            for (j = 0; j < 3 ; j++)
-                g3[i][j] = pseudoRandomMask();
-            normalize3(g3[i]);
+            randomTable[i].x = randomFloat();
+            randomTable[i].y = randomFloat();
+            randomTable[i].z = randomFloat();
+            normalize(randomTable[i]);
         }
 
-        while (--i) {
-            k = p[i];
-            p[i] = p[j = Math.floor(pseudoRandom() * B)];
-            p[j] = k;
+        for (i = 0; i < MASK; i++) {
+            k = Math.floor(pseudoRandom() * MASK);
+            temp = Math.floor(permutationTable[i]);
+            permutationTable[i] = permutationTable[k];
+            permutationTable[k] = temp;
         }
 
-        for (i = 0 ; i < B + 2 ; i++) {
-            p[B + i] = p[i];
-            g1[B + i] = g1[i];
-            for (j = 0; j < 2; j++)
-                g2[B + i][j] = g2[i][j];
-            for (j = 0; j < 3; j++)
-                g3[B + i][j] = g3[i][j];
+        for (i = MASK; i < MASK + MASK; i++) {
+            permutationTable[i] = permutationTable[i - MASK];
+            randomTable[i] = randomTable[i - MASK];
         }
     };
 
     /**
-     * Return object.
+     * Frequency, Amplitude, Persistance and Octaves
+     */
+
+    var get1D = function(x, frequency, amplitude, persistence, octaves)
+    {
+        var value = 0;
+        frequency = 1 / frequency;
+        for (var i = 0; i < octaves; i++)
+        {
+            value += noise1(x * frequency) * amplitude;
+            frequency *= 2;
+            amplitude *= persistence;
+        }
+        return value;
+    };
+
+    var get2D = function(x, y, frequency, amplitude, persistence, octaves)
+    {
+        var value = 0;
+        frequency = 1 / frequency;
+        for (var i = 0; i < octaves; i++)
+        {
+            value += noise2(x * frequency, y * frequency) * amplitude;
+            frequency *= 2;
+            amplitude *= persistence;
+        }
+        return value;
+    };
+
+    var get3D = function(x, y, z, frequency, amplitude, persistence, octaves)
+    {
+        var value = 0;
+        frequency = 1 / frequency;
+        for (var i = 0; i < octaves; i++)
+        {
+            value += noise3(x * frequency, y * frequency, z * frequency) * amplitude;
+            frequency *= 2;
+            amplitude *= persistence;
+        }
+        return value;
+    };
+
+    /**
+     * Init
+     */
+
+    generateTables();
+
+    /**
+     * Return facade
      */
 
     return {
-        get1D: noise1,
-        get2D: noise2,
-        get3D: noise3
+        get1D: get1D,
+        get2D: get2D,
+        get3D: get3D
     }
 });
