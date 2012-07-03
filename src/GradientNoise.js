@@ -1,237 +1,238 @@
 /**
  * Gradient Noise
  *
+ * Requires:
+ * - Noizy.PRNG
+ *
  * src: http://mrl.nyu.edu/~perlin/doc/oscar.html#noise
  * src2: http://code.google.com/p/processing/source/browse/trunk/processing/java/libraries/opengl/examples/Advanced/Planets/Perlin.pde?spec=svn9511&r=9511
  * src3: http://www.gamedev.net/topic/291699-blocky-perlin-noise-pics-included/
  */
 
-define([
-        './PRNG'
-    ],
-    function(PRNG) {
+window.Noizy.GradientNoise = (function() {
 
-    // own PRNG instance
-    var pseudoRandom = new PRNG().random;
+	// ~~~ PRIVATE STATIC
 
-    var randomFloat = function() {
-        return pseudoRandom() * 2 - 1;    // output: [-1, 1]
-        //return ((pseudoRandom() * (MASK + MASK) - MASK)) / MASK;    // output: [-1, 1]
-    };
+	// own PRNG instance
+	var pseudoRandom = new Noizy.PRNG().random;
 
-    var MASK = 256, // B
-        MAXIM = 4096,   // N
-        permutationTable = new Array(MASK + MASK),  // p
-        randomTable = new Array(MASK + MASK);   // g1
+	var randomFloat = function() {
+		return pseudoRandom() * 2 - 1;    // output: [-1, 1]
+		//return ((pseudoRandom() * (MASK + MASK) - MASK)) / MASK;    // output: [-1, 1]
+	};
 
-    var X =  { int0: 0, int1: 0, frac0: 0, frac1: 0 },
-        Y =  { int0: 0, int1: 0, frac0: 0, frac1: 0 },
-        Z =  { int0: 0, int1: 0, frac0: 0, frac1: 0 };
+	var MASK = 256, // B
+		MAXIM = 4096, // N
+		permutationTable = new Array(MASK + MASK), // p
+		randomTable = new Array(MASK + MASK);   // g1
 
-    var s_curve = function(t) {
-        return t * t * (3 - 2 * t);
-    };
+	var X = { int0:0, int1:0, frac0:0, frac1:0 },
+		Y = { int0:0, int1:0, frac0:0, frac1:0 },
+		Z = { int0:0, int1:0, frac0:0, frac1:0 };
 
-    var lerp = function(t, a, b) {
-        return a + t * (b - a);
-    };
+	var s_curve = function(t) {
+		return t * t * (3 - 2 * t);
+	};
 
-    var setup = function(p, P)
-    {
-        var t = p + MAXIM;
-        var intT = Math.floor(t);
+	var lerp = function(t, a, b) {
+		return a + t * (b - a);
+	};
 
-        P.int0 = Math.floor(intT % MASK);
-        P.int1 = Math.floor((P.int0 + 1) % MASK);
-        P.frac0 = t - intT;
-        P.frac1 = P.frac0 - 1;
-    };
+	var setup = function(p, P) {
+		var t = p + MAXIM;
+		var intT = Math.floor(t);
 
-    var noise1 = function(x) {
-        setup(x, X);
+		P.int0 = Math.floor(intT % MASK);
+		P.int1 = Math.floor((P.int0 + 1) % MASK);
+		P.frac0 = t - intT;
+		P.frac1 = P.frac0 - 1;
+	};
 
-        var index0 = permutationTable[X.int0];
-        var index1 = permutationTable[X.int1];
+	var noise1 = function(x) {
+		setup(x, X);
 
-        var sx = s_curve(X.frac0);
+		var index0 = permutationTable[X.int0];
+		var index1 = permutationTable[X.int1];
 
-        var u = X.frac0 * randomTable[index0].x;
-        var v = X.frac1 * randomTable[index1].x;
+		var sx = s_curve(X.frac0);
 
-        return lerp(sx, u, v);
-    };
+		var u = X.frac0 * randomTable[index0].x;
+		var v = X.frac1 * randomTable[index1].x;
 
-    var noise2 = function(x, y) {
-        setup(x, X);
-        setup(y, Y);
+		return lerp(sx, u, v);
+	};
 
-        var index0 = permutationTable[X.int0];
-        var index1 = permutationTable[X.int1];
+	var noise2 = function(x, y) {
+		setup(x, X);
+		setup(y, Y);
 
-        var corner0 = permutationTable[index0 + Y.int0];
-        var corner1 = permutationTable[index1 + Y.int0];
-        var corner2 = permutationTable[index0 + Y.int1];
-        var corner3 = permutationTable[index1 + Y.int1];
+		var index0 = permutationTable[X.int0];
+		var index1 = permutationTable[X.int1];
 
-        var sx = s_curve(X.frac0);
-        var sy = s_curve(Y.frac0);
+		var corner0 = permutationTable[index0 + Y.int0];
+		var corner1 = permutationTable[index1 + Y.int0];
+		var corner2 = permutationTable[index0 + Y.int1];
+		var corner3 = permutationTable[index1 + Y.int1];
 
-        var v, kx, ky;
-        v = randomTable[corner0];   
-        kx = X.frac0 * v.x + Y.frac0 * v.y;
-        v = randomTable[corner1]; 	
-        ky = X.frac1 * v.x + Y.frac0 * v.y;
-        var a = lerp(sx, kx, ky);
+		var sx = s_curve(X.frac0);
+		var sy = s_curve(Y.frac0);
 
-        v = randomTable[corner2]; 	
-        kx = X.frac0 * v.x + Y.frac1 * v.y;
-        v = randomTable[corner3]; 	
-        ky = X.frac1 * v.x + Y.frac1 * v.y;
-        var b = lerp(sx, kx, ky);
+		var v, kx, ky;
+		v = randomTable[corner0];
+		kx = X.frac0 * v.x + Y.frac0 * v.y;
+		v = randomTable[corner1];
+		ky = X.frac1 * v.x + Y.frac0 * v.y;
+		var a = lerp(sx, kx, ky);
 
-        return lerp(sy, a, b);
-    };
+		v = randomTable[corner2];
+		kx = X.frac0 * v.x + Y.frac1 * v.y;
+		v = randomTable[corner3];
+		ky = X.frac1 * v.x + Y.frac1 * v.y;
+		var b = lerp(sx, kx, ky);
 
-    var noise3 = function(x, y, z) {
-        setup(x, X);
-        setup(y, Y);
-        setup(z, Z);
+		return lerp(sy, a, b);
+	};
 
-        var index0 = permutationTable[X.int0];
-        var index1 = permutationTable[X.int1];
+	var noise3 = function(x, y, z) {
+		setup(x, X);
+		setup(y, Y);
+		setup(z, Z);
 
-        var corner0 = permutationTable[index0 + Y.int0];
-        var corner1 = permutationTable[index1 + Y.int0];
-        var corner2 = permutationTable[index0 + Y.int1];
-        var corner3 = permutationTable[index1 + Y.int1];
+		var index0 = permutationTable[X.int0];
+		var index1 = permutationTable[X.int1];
 
-        var sx = s_curve(X.frac0);
-        var sy = s_curve(Y.frac0);
-        var sz = s_curve(Z.frac0);
+		var corner0 = permutationTable[index0 + Y.int0];
+		var corner1 = permutationTable[index1 + Y.int0];
+		var corner2 = permutationTable[index0 + Y.int1];
+		var corner3 = permutationTable[index1 + Y.int1];
 
-        var v, kx, ky, a, b;
-        v = randomTable[corner0 + Z.int0];
-        kx = X.frac0 * v.x + Y.frac0 * v.y + Z.frac0 * v.z;
-        v = randomTable[corner1 + Z.int0];
-        ky = X.frac1 * v.x + Y.frac0 * v.y + Z.frac0 * v.z;
-        a = lerp(sx, kx, ky);
+		var sx = s_curve(X.frac0);
+		var sy = s_curve(Y.frac0);
+		var sz = s_curve(Z.frac0);
 
-        v = randomTable[corner2 + Z.int0];
-        kx = X.frac0 * v.x + Y.frac1 * v.y + Z.frac0 * v.z;
-        v = randomTable[corner3 + Z.int0];
-        ky = X.frac1 * v.x + Y.frac1 * v.y + Z.frac0 * v.z;
-        b = lerp(sx, kx, ky);
+		var v, kx, ky, a, b;
+		v = randomTable[corner0 + Z.int0];
+		kx = X.frac0 * v.x + Y.frac0 * v.y + Z.frac0 * v.z;
+		v = randomTable[corner1 + Z.int0];
+		ky = X.frac1 * v.x + Y.frac0 * v.y + Z.frac0 * v.z;
+		a = lerp(sx, kx, ky);
 
-        var c = lerp(sy, a, b);
+		v = randomTable[corner2 + Z.int0];
+		kx = X.frac0 * v.x + Y.frac1 * v.y + Z.frac0 * v.z;
+		v = randomTable[corner3 + Z.int0];
+		ky = X.frac1 * v.x + Y.frac1 * v.y + Z.frac0 * v.z;
+		b = lerp(sx, kx, ky);
 
-        v = randomTable[corner0 + Z.int1];
-        kx = X.frac0 * v.x + Y.frac0 * v.y + Z.frac1 * v.z;
-        v = randomTable[corner1 + Z.int1];
-        ky = X.frac1 * v.x + Y.frac0 * v.y + Z.frac1 * v.z;
-        a = lerp(sx, kx, ky);
+		var c = lerp(sy, a, b);
 
-        v = randomTable[corner2 + Z.int1];
-        kx = X.frac0 * v.x + Y.frac1 * v.y + Z.frac1 * v.z;
-        v = randomTable[corner3 + Z.int1];
-        ky = X.frac1 * v.x + Y.frac1 * v.y + Z.frac1 * v.z;
-        b = lerp(sx, kx, ky);
+		v = randomTable[corner0 + Z.int1];
+		kx = X.frac0 * v.x + Y.frac0 * v.y + Z.frac1 * v.z;
+		v = randomTable[corner1 + Z.int1];
+		ky = X.frac1 * v.x + Y.frac0 * v.y + Z.frac1 * v.z;
+		a = lerp(sx, kx, ky);
 
-        var d = lerp(sy, a, b);
+		v = randomTable[corner2 + Z.int1];
+		kx = X.frac0 * v.x + Y.frac1 * v.y + Z.frac1 * v.z;
+		v = randomTable[corner3 + Z.int1];
+		ky = X.frac1 * v.x + Y.frac1 * v.y + Z.frac1 * v.z;
+		b = lerp(sx, kx, ky);
 
-        return lerp(sz, c, d);
-    };
+		var d = lerp(sy, a, b);
 
-    var normalize = function(v) {
-        var s = Math.sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
-        v.x /= s;
-        v.y /= s;
-        v.z /= s;
-    };
+		return lerp(sz, c, d);
+	};
 
-    var generateTables =  function() {
-        var i, k, temp;
+	var normalize = function(v) {
+		var s = Math.sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
+		v.x /= s;
+		v.y /= s;
+		v.z /= s;
+	};
 
-        for(i = 0; i < randomTable.length; i++)
-            randomTable[i] = {};
+	var generateTables = function() {
+		var i, k, temp;
 
-        for (i = 0; i < MASK ; i++) {
-            permutationTable[i] = i;
+		for (i = 0; i < randomTable.length; i++)
+			randomTable[i] = {};
 
-            randomTable[i].x = randomFloat();
-            randomTable[i].y = randomFloat();
-            randomTable[i].z = randomFloat();
-            normalize(randomTable[i]);
-        }
+		for (i = 0; i < MASK; i++) {
+			permutationTable[i] = i;
 
-        for (i = 0; i < MASK; i++) {
-            k = Math.floor(pseudoRandom() * MASK);
-            temp = Math.floor(permutationTable[i]);
-            permutationTable[i] = permutationTable[k];
-            permutationTable[k] = temp;
-        }
+			randomTable[i].x = randomFloat();
+			randomTable[i].y = randomFloat();
+			randomTable[i].z = randomFloat();
+			normalize(randomTable[i]);
+		}
 
-        for (i = MASK; i < MASK + MASK; i++) {
-            permutationTable[i] = permutationTable[i - MASK];
-            randomTable[i] = randomTable[i - MASK];
-        }
-    };
+		for (i = 0; i < MASK; i++) {
+			k = Math.floor(pseudoRandom() * MASK);
+			temp = Math.floor(permutationTable[i]);
+			permutationTable[i] = permutationTable[k];
+			permutationTable[k] = temp;
+		}
 
-    /**
-     * Frequency, Amplitude, Persistance and Octaves
-     */
+		for (i = MASK; i < MASK + MASK; i++) {
+			permutationTable[i] = permutationTable[i - MASK];
+			randomTable[i] = randomTable[i - MASK];
+		}
+	};
 
-    var get1D = function(x, frequency, amplitude, persistence, octaves)
-    {
-        var value = 0;
-        frequency = 1 / frequency;
-        for (var i = 0; i < octaves; i++)
-        {
-            value += noise1(x * frequency) * amplitude;
-            frequency *= 2;
-            amplitude *= persistence;
-        }
-        return value;
-    };
+	/**
+	 * Frequency, Amplitude, Persistance and Octaves
+	 */
 
-    var get2D = function(x, y, frequency, amplitude, persistence, octaves)
-    {
-        var value = 0;
-        frequency = 1 / frequency;
-        for (var i = 0; i < octaves; i++)
-        {
-            value += noise2(x * frequency, y * frequency) * amplitude;
-            frequency *= 2;
-            amplitude *= persistence;
-        }
-        return value;
-    };
+	var get1D = function(x, frequency, amplitude, persistence, octaves) {
+		var value = 0;
+		frequency = 1 / frequency;
+		for (var i = 0; i < octaves; i++) {
+			value += noise1(x * frequency) * amplitude;
+			frequency *= 2;
+			amplitude *= persistence;
+		}
+		return value;
+	};
 
-    var get3D = function(x, y, z, frequency, amplitude, persistence, octaves)
-    {
-        var value = 0;
-        frequency = 1 / frequency;
-        for (var i = 0; i < octaves; i++)
-        {
-            value += noise3(x * frequency, y * frequency, z * frequency) * amplitude;
-            frequency *= 2;
-            amplitude *= persistence;
-        }
-        return value;
-    };
+	var get2D = function(x, y, frequency, amplitude, persistence, octaves) {
+		var value = 0;
+		frequency = 1 / frequency;
+		for (var i = 0; i < octaves; i++) {
+			value += noise2(x * frequency, y * frequency) * amplitude;
+			frequency *= 2;
+			amplitude *= persistence;
+		}
+		return value;
+	};
 
-    /**
-     * Init
-     */
+	var get3D = function(x, y, z, frequency, amplitude, persistence, octaves) {
+		var value = 0;
+		frequency = 1 / frequency;
+		for (var i = 0; i < octaves; i++) {
+			value += noise3(x * frequency, y * frequency, z * frequency) * amplitude;
+			frequency *= 2;
+			amplitude *= persistence;
+		}
+		return value;
+	};
 
-    generateTables();
+	/**
+	 * Init
+	 */
 
-    /**
-     * Return facade
-     */
+	generateTables();
 
-    return {
-        get1D: get1D,
-        get2D: get2D,
-        get3D: get3D
-    }
-});
+	// ~~~ END PRIVATE STATIC
+
+	// ~~~ CONSTRUCTOR
+	var GradientNoise = function() {
+		// just static methods...
+	};
+
+	// ~~~ PUBLIC STATIC
+
+	GradientNoise.get1D = get1D;
+	GradientNoise.get2D = get2D;
+	GradientNoise.get3D = get3D;
+
+	// ~~~ RETURN CONSTRUCTOR
+	return GradientNoise;
+})();

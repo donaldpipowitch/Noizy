@@ -8,47 +8,60 @@
  * Use static functions PRNG.hash | PRNG.random
  * or create a new PRNG instance with specific seed (optional).
  *
- * Version: r1
  * @author: donaldpipowitch
  */
 
-define(function() {
+window.Noizy.PRNG = (function() {
 
-    // returns values from 0 to 1
-    var PRNG = function(seed) {
+	// ~~~ PRIVATE STATIC
 
-        // specific seed or default seed
-        var _seed = seed ? seed : 49734321;
+	var privateStaticAttribute = true;
 
-        // get pseudo random
-        PRNG.prototype.random = function() {
-            _seed = ((_seed + 0x7ed55d16) + (_seed << 12))  & 0xffffffff;
-            _seed = ((_seed ^ 0xc761c23c) ^ (_seed >>> 19)) & 0xffffffff;
-            _seed = ((_seed + 0x165667b1) + (_seed << 5))   & 0xffffffff;
-            _seed = ((_seed + 0xd3a2646c) ^ (_seed << 9))   & 0xffffffff;
-            _seed = ((_seed + 0xfd7046c5) + (_seed << 3))   & 0xffffffff;
-            _seed = ((_seed ^ 0xb55a4f09) ^ (_seed >>> 16)) & 0xffffffff;
-            return (_seed & 0xfffffff) / 0x10000000;
-        };
+	var privateStaticMethod = function() {
+		return true;
+	};
 
-    };
+	// ~~~ CONSTRUCTOR
+	var PRNG = function(seed) {
 
-    // static function: returns pseudo random value from PRNG singleton (default seed)
-    PRNG.random = (function() {
-        var prng = new PRNG();
-        return prng.random;
-    })();
+		// ~~~ PRIVATE INSTANCE
 
-    // static function: simple hash
-    PRNG.hash = function(x) {
-        x = ((x + 0x7ed55d16) + (x << 12))  & 0xffffffff;
-        x = ((x ^ 0xc761c23c) ^ (x >>> 19)) & 0xffffffff;
-        x = ((x + 0x165667b1) + (x << 5))   & 0xffffffff;
-        x = ((x + 0xd3a2646c) ^ (x << 9))   & 0xffffffff;
-        x = ((x + 0xfd7046c5) + (x << 3))   & 0xffffffff;
-        x = ((x ^ 0xb55a4f09) ^ (x >>> 16)) & 0xffffffff;
-        return (x & 0xfffffff) / 0x10000000;
-    };
+		// specific seed or default seed
+		var _seed = seed ? seed : 49734321;
 
-    return PRNG;
-});
+		// ~~~ PUBLIC INSTANCE
+
+		// get pseudo random, returns values from 0 to 1
+		PRNG.prototype.random = function() {
+			_seed = ((_seed + 0x7ed55d16) + (_seed << 12))  & 0xffffffff;
+			_seed = ((_seed ^ 0xc761c23c) ^ (_seed >>> 19)) & 0xffffffff;
+			_seed = ((_seed + 0x165667b1) + (_seed << 5))   & 0xffffffff;
+			_seed = ((_seed + 0xd3a2646c) ^ (_seed << 9))   & 0xffffffff;
+			_seed = ((_seed + 0xfd7046c5) + (_seed << 3))   & 0xffffffff;
+			_seed = ((_seed ^ 0xb55a4f09) ^ (_seed >>> 16)) & 0xffffffff;
+			return (_seed & 0xfffffff) / 0x10000000;
+		};
+	};
+
+	// ~~~ PUBLIC STATIC
+
+	// static function: returns pseudo random value from PRNG singleton (default seed)
+	PRNG.random = (function() {
+		var prng = new PRNG();
+		return prng.random;
+	})();
+
+	// static function: simple hash
+	PRNG.hash = function(x) {
+		x = ((x + 0x7ed55d16) + (x << 12))  & 0xffffffff;
+		x = ((x ^ 0xc761c23c) ^ (x >>> 19)) & 0xffffffff;
+		x = ((x + 0x165667b1) + (x << 5))   & 0xffffffff;
+		x = ((x + 0xd3a2646c) ^ (x << 9))   & 0xffffffff;
+		x = ((x + 0xfd7046c5) + (x << 3))   & 0xffffffff;
+		x = ((x ^ 0xb55a4f09) ^ (x >>> 16)) & 0xffffffff;
+		return (x & 0xfffffff) / 0x10000000;
+	};
+
+	// ~~~ RETURN CONSTRUCTOR
+	return PRNG;
+})();
