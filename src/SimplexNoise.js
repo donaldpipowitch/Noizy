@@ -65,8 +65,8 @@ window.Noizy.SimplexNoise = (function() {
 	var grad = function(hash, x, y, z) {
 		var h = hash & 15;          // CONVERT LO 4 BITS OF HASH CODE
 		var u = h < 8 ? x : y, // INTO 12 GRADIENT DIRECTIONS.
-			v = h < 4 ? y : h == 12 || h == 14 ? x : z;
-		return ((h & 1) == 0 ? u : -u) + ((h & 2) == 0 ? v : -v);
+			v = h < 4 ? y : h === 12 || h === 14 ? x : z;
+		return ((h & 1) === 0 ? u : -u) + ((h & 2) === 0 ? v : -v);
 	};
 
 	/**

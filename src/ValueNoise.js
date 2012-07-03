@@ -177,12 +177,13 @@ window.Noizy.ValueNoise = (function() {
 		var value = 0,
 			xFrqz,
 			yFrqz,
-			v = [4];
-		for (var i = 0; i < 4; i++) {
+			v = [4],
+			i;
+		for (i = 0; i < 4; i++) {
 			v[i] = [4];
 		}
 		frequency = 1 / frequency;
-		for (var i = 0; i < octaves; i++) {
+		for (i = 0; i < octaves; i++) {
 			xFrqz = Math.floor(x * frequency);
 			yFrqz = Math.floor(y * frequency);
 
@@ -344,15 +345,16 @@ window.Noizy.ValueNoise = (function() {
 			xFrqz,
 			yFrqz,
 			zFrqz,
-			v = [4];
-		for (var i = 0; i < 4; i++) {
+			v = [4],
+			i;
+		for (i = 0; i < 4; i++) {
 			v[i] = [4];
 			for (var j = 0; j < 4; j++) {
 				v[i][j] = [4];
 			}
 		}
 		frequency = 1 / frequency;
-		for (var i = 0; i < octaves; i++) {
+		for (i = 0; i < octaves; i++) {
 			xFrqz = Math.floor(x * frequency);
 			yFrqz = Math.floor(y * frequency);
 			zFrqz = Math.floor(z * frequency);

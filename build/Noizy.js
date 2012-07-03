@@ -255,12 +255,13 @@ window.Noizy.ValueNoise = (function() {
 		var value = 0,
 			xFrqz,
 			yFrqz,
-			v = [4];
-		for (var i = 0; i < 4; i++) {
+			v = [4],
+			i;
+		for (i = 0; i < 4; i++) {
 			v[i] = [4];
 		}
 		frequency = 1 / frequency;
-		for (var i = 0; i < octaves; i++) {
+		for (i = 0; i < octaves; i++) {
 			xFrqz = Math.floor(x * frequency);
 			yFrqz = Math.floor(y * frequency);
 
@@ -422,15 +423,16 @@ window.Noizy.ValueNoise = (function() {
 			xFrqz,
 			yFrqz,
 			zFrqz,
-			v = [4];
-		for (var i = 0; i < 4; i++) {
+			v = [4],
+			i;
+		for (i = 0; i < 4; i++) {
 			v[i] = [4];
 			for (var j = 0; j < 4; j++) {
 				v[i][j] = [4];
 			}
 		}
 		frequency = 1 / frequency;
-		for (var i = 0; i < octaves; i++) {
+		for (i = 0; i < octaves; i++) {
 			xFrqz = Math.floor(x * frequency);
 			yFrqz = Math.floor(y * frequency);
 			zFrqz = Math.floor(z * frequency);
@@ -780,8 +782,8 @@ window.Noizy.SimplexNoise = (function() {
 	var grad = function(hash, x, y, z) {
 		var h = hash & 15;          // CONVERT LO 4 BITS OF HASH CODE
 		var u = h < 8 ? x : y, // INTO 12 GRADIENT DIRECTIONS.
-			v = h < 4 ? y : h == 12 || h == 14 ? x : z;
-		return ((h & 1) == 0 ? u : -u) + ((h & 2) == 0 ? v : -v);
+			v = h < 4 ? y : h === 12 || h === 14 ? x : z;
+		return ((h & 1) === 0 ? u : -u) + ((h & 2) === 0 ? v : -v);
 	};
 
 	/**

@@ -1,5 +1,5 @@
 (function() {
-	console.log(Noizy);
+	if(console) console.log(Noizy);
 
 	// config
 	var seedX = 1,

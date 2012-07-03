@@ -20,6 +20,15 @@ module.exports = function(grunt) {
 				separator: '\n\n'
 			}
 		},
+		jshint: {
+			options: {
+				// deactivate specific jshint options
+				smarttabs: true
+			}
+		},
+		lint: {
+			files: [ '../build/Noizy.js']
+		},
 		min: {
 			dist: {
 				src: [
@@ -31,5 +40,5 @@ module.exports = function(grunt) {
 		}
 	});
 
-	grunt.registerTask('default', 'concat min');
+	grunt.registerTask('default', 'concat lint min');
 };
