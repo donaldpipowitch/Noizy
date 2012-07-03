@@ -4,7 +4,7 @@ module.exports = function(grunt) {
 	grunt.initConfig({
 		pkg: '<json:package.json>',
 		meta: {
-			banner: '/*! <%= pkg.name %> - <%= pkg.version %> - @author <%= pkg.author %> - ' +
+			banner: '/*! <%= pkg.name %> - @author <%= pkg.author %> - ' +
 				'<%= grunt.template.today("yyyy-mm-dd") %> */'
 		},
 		concat:{
