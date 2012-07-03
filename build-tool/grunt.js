@@ -2,6 +2,11 @@ module.exports = function(grunt) {
 
 	// Project configuration.
 	grunt.initConfig({
+		pkg: '<json:package.json>',
+		meta: {
+			banner: '/*! <%= pkg.name %> - <%= pkg.version %> - @author <%= pkg.author %> - ' +
+				'<%= grunt.template.today("yyyy-mm-dd") %> */'
+		},
 		concat:{
 			complete:{
 				src:[
@@ -14,8 +19,17 @@ module.exports = function(grunt) {
 				dest:'../build/Noizy.js',
 				separator: '\n\n'
 			}
+		},
+		min: {
+			dist: {
+				src: [
+					'<banner>',
+					'../build/Noizy.js'
+				],
+				dest: '../build/Noizy.min.js'
+			}
 		}
 	});
 
-	grunt.registerTask('default', 'concat');
+	grunt.registerTask('default', 'concat min');
 };
