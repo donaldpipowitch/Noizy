@@ -9,7 +9,7 @@ Add documentation ;)
 
 Examples
 ====
-* Very basic usage of GradientNoise 2D and three.js: http://jsfiddle.net/z3ygz/
+* Very basic usage of GradientNoise 2D and three.js: http://jsfiddle.net/bnKWS/
 
 Benchmark
 ====
